@@ -1,11 +1,5 @@
 use_frameworks!
 
 target 'CachableAVAsset_Example' do
-  pod 'CachableAVAsset', :path => '../'
-
-  target 'CachableAVAsset_Tests' do
-    inherit! :search_paths
-
-    
-  end
+  pod 'VideoCache', :path => '../'
 end

@@ -1,5 +1,5 @@
 #
-# Be sure to run `pod lib lint CachableAVAsset.podspec' to ensure this is a
+# Be sure to run `pod lib lint VideoCache.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
@@ -21,11 +21,11 @@ Pod::Spec.new do |s|
 TODO: Add long description of the pod here.
                        DESC
 
-  s.homepage         = 'https://github.com/DirGoTii/CachableAVAsset'
+  s.homepage         = 'https://github.com/7ulipa/VideoCache'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'DirGoTii' => 'darwin.jxzang@gmail.com' }
-  s.source           = { :git => 'https://github.com/DirGoTii/CachableAVAsset.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/7ulipa/VideoCache.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '8.0'

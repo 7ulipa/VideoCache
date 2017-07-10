@@ -154,7 +154,7 @@ final class CacheRecord {
         
         writer.seek(toFileOffset: self.downloadedLength)
         
-        downloadDisposable = Downloader.shared.download(self.meta.url.absoluteString, from: self.downloadedLength).start { (event) in
+        downloadDisposable = VideoCacheSettings.downloader.download(self.meta.url.absoluteString, from: self.downloadedLength).start { (event) in
             switch event {
             case .value(let value):
                 switch value {

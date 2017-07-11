@@ -46,7 +46,7 @@ public class CacheManager {
             do {
                 try FileManager.default.contentsOfDirectory(atPath: VideoCacheSettings.kCachePath as String).forEach({ [weak self] (dirname) in
                     let dirPath = VideoCacheSettings.kCachePath.appendingPathComponent(dirname)
-                    if let record = CacheRecord(path: dirPath), !record.isExpired() {
+                    if let record = CacheRecord(path: dirPath), record.isExpired() {
                         try FileManager.default.removeItem(atPath: dirPath)
                         self?.caches.value.removeValue(forKey: record.meta.url.fakeTransform)
                     }

@@ -13,19 +13,19 @@ public class CacheManager {
     public static let shared = CacheManager()
     
     public func startPlay(url: URL) {
-        cache(for: url).playing.value = true
+        cache(for: url.fakeTransform).playing.value = true
     }
     
     public func stopPlay(url: URL) {
-        cache(for: url).playing.value = false
+        cache(for: url.fakeTransform).playing.value = false
     }
     
     public func startPrefetch(url: URL) {
-        cache(for: url).prefetching.value = true
+        cache(for: url.fakeTransform).prefetching.value = true
     }
     
     public func stopPrefetch(url: URL) {
-        cache(for: url).prefetching.value = false
+        cache(for: url.fakeTransform).prefetching.value = false
     }
     
     let workQueue = DispatchQueue(label: "com.\(CacheManager.self).workQueue")

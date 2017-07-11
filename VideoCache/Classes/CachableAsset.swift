@@ -15,7 +15,10 @@ public class CachableURLAsset: AVURLAsset {
     let resourceLoadQueue = DispatchQueue(label: "com.\(CachableURLAsset.self).workQueue")
     let (cancelSignal, cancelObserver) = Signal<AVAssetResourceLoadingRequest, NoError>.pipe()
     
+    fileprivate let originURL: URL
+    
     override init(url URL: URL, options: [String : Any]? = nil) {
+        originURL = URL
         super.init(url: URL.fakeTransform, options: options)
         resourceLoader.setDelegate(self, queue: resourceLoadQueue)
     }
@@ -24,11 +27,11 @@ public class CachableURLAsset: AVURLAsset {
 public class AutoURLAsset: CachableURLAsset {
     override init(url URL: URL, options: [String : Any]? = nil) {
         super.init(url: URL, options: options)
-        CacheManager.shared.startPlay(url: URL.fakeTransform)
+        CacheManager.shared.startPlay(url: originURL)
     }
     
     deinit {
-        CacheManager.shared.stopPlay(url: url)
+        CacheManager.shared.stopPlay(url: originURL)
     }
 }
 

@@ -71,7 +71,7 @@ final class CacheRecord {
     
     private let workQueue = DispatchQueue(label: "com.\(CacheRecord.self).workQueue")
     
-    private var meta: RecordMeta
+    var meta: RecordMeta
     
     let playing = MutableProperty(false)
     let prefetching = MutableProperty(false)

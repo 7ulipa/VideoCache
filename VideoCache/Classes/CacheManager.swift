@@ -41,12 +41,14 @@ public class CacheManager {
     }
     
     private func deleteOldFiles(with complete: (() -> Void)?) {
-        workQueue.async {
+        workQueue.async { [weak self] in
+            guard let `self` = self else { return }
             do {
-                try FileManager.default.contentsOfDirectory(atPath: VideoCacheSettings.kCachePath as String).forEach({ (dirname) in
+                try FileManager.default.contentsOfDirectory(atPath: VideoCacheSettings.kCachePath as String).forEach({ [weak self] (dirname) in
                     let dirPath = VideoCacheSettings.kCachePath.appendingPathComponent(dirname)
-                    if let record = CacheRecord(path: dirPath), record.isExpired() {
+                    if let record = CacheRecord(path: dirPath), !record.isExpired() {
                         try FileManager.default.removeItem(atPath: dirPath)
+                        self?.caches.value.removeValue(forKey: record.meta.url.fakeTransform)
                     }
                 })
                 complete?()

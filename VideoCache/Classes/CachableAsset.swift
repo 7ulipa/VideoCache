@@ -28,7 +28,7 @@ public class AutoURLAsset: CachableURLAsset {
     }
     
     deinit {
-        CacheManager.shared.stopPlay(url: url.fakeTransform)
+        CacheManager.shared.stopPlay(url: url)
     }
 }
 

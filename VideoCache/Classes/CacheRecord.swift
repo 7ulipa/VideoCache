@@ -131,8 +131,20 @@ final class CacheRecord {
         }
     }
     
+    init?(path: String) {
+        guard FileManager.default.fileExists(atPath: path) else { return nil }
+        self.path = path
+        metaPath = (path as NSString).appendingPathComponent("meta")
+        contentPath = (path as NSString).appendingPathComponent("content")
+        if let meta = NSKeyedUnarchiver.unarchiveObject(withFile: metaPath) as? RecordMeta {
+            self.meta = meta
+        } else {
+            return nil
+        }
+    }
+    
     private static func path(for url: URL) -> String {
-        return ((NSTemporaryDirectory() as NSString).appendingPathComponent("VideoCache") as NSString).appendingPathComponent(url.absoluteString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? "tmp")
+        return VideoCacheSettings.kCachePath.appendingPathComponent(url.absoluteString.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? "tmp")
     }
     
     private var downloading = false
@@ -244,5 +256,10 @@ final class CacheRecord {
     
     func startCaching() {
         workQueue.async(execute: _startCaching)
+    }
+    
+    func isExpired() -> Bool {
+        let expirationDate = Date(timeIntervalSinceNow: -(Double)(VideoCacheSettings.kMCacheAge))
+        return meta.createDate.compare(expirationDate) == .orderedAscending
     }
 }

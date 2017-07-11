@@ -61,9 +61,12 @@ final class CacheRecord {
     private let metaPath: String
     private let contentPath: String
     
-    private let (dataChangedSignal, dataChangedObserver) = Signal<(), NoError>.pipe()
+    private let loadingCount = MutableProperty(0)
+    private lazy var loading: Property<Bool> = {
+        return Property(self.loadingCount).map { $0 > 0 }
+    }()
     
-    private lazy var requestLoader: Action<AVAssetResourceLoadingRequest, (), NoError> = self.createRequestLoader()
+    private let (dataChangedSignal, dataChangedObserver) = Signal<(), NoError>.pipe()
     
     private var downloadedLength: UInt64 = 0
     
@@ -105,10 +108,10 @@ final class CacheRecord {
             }
         }
         
-        SignalProducer.combineLatest(playing.producer, requestLoader.isExecuting.producer, completed.producer)
+        SignalProducer.combineLatest(playing.producer, loading.producer, completed.producer)
             .map { ($0.0 || $0.1) && !$0.2 }
-            .skip(first: 1)
             .skipRepeats()
+            .skip(first: 1)
             .startWithValues { (value) in
                 CacheRecord.sacredCount.modify {
                     if value {
@@ -116,10 +119,11 @@ final class CacheRecord {
                     } else {
                         $0 -= 1
                     }
+                    debugPrint("dirgotii SacredCount: \($0)")
                 }
         }
         
-        SignalProducer.combineLatest(playing.producer, requestLoader.isExecuting.producer, prefetching.producer, CacheRecord.hasSacredTask, completed.producer)
+        SignalProducer.combineLatest(playing.producer, loading.producer, prefetching.producer, CacheRecord.hasSacredTask, completed.producer)
             .map { !$0.4 && ($0.0 || $0.1 || ($0.2 && !$0.3)) }
             .skipRepeats()
             .startWithValues { [weak self] (value) in
@@ -128,6 +132,10 @@ final class CacheRecord {
                 } else {
                     self?.stopCaching()
                 }
+        }
+        
+        loadingCount.producer.startWithValues { (count) in
+            debugPrint("dirgotii loading: \(count)")
         }
     }
     
@@ -167,7 +175,9 @@ final class CacheRecord {
         
         writer.seek(toFileOffset: self.downloadedLength)
         
-        downloadDisposable = VideoCacheSettings.downloader.download(self.meta.url.absoluteString, from: self.downloadedLength).start { (event) in
+        debugPrint("dirgotii start download \(self.meta.url.lastPathComponent)")
+        
+        downloadDisposable = VideoCacheSettings.downloader.download(self.meta.url.absoluteString, from: self.downloadedLength).observe(on: self.workQueue).start { (event) in
             switch event {
             case .value(let value):
                 switch value {
@@ -183,9 +193,11 @@ final class CacheRecord {
                 }
             case .failed, .interrupted:
                 self.downloading = false
+                debugPrint("dirgotii stop download \(self.meta.url.lastPathComponent)")
             case .completed:
                 self.downloading = false
                 self.completed.value = true
+                debugPrint("dirgotii stop download \(self.meta.url.lastPathComponent)")
             }
         }
     }
@@ -195,22 +207,18 @@ final class CacheRecord {
         return SignalProducer(dataChangedSignal).prefix(value: ())
     }
     
-    private func createRequestLoader() -> Action<AVAssetResourceLoadingRequest, (), NoError> {
-        return Action<AVAssetResourceLoadingRequest, (), NoError> { (input) -> SignalProducer<(), NoError> in
-            return SignalProducer<(), NoError> { (observer, dispose) in
-                dispose.add(self.dataChanged.startWithValues {
-                    self.workQueue.async {
-                        if self.process(request: input) {
-                            observer.sendCompleted()
-                        }
-                    }
-                })
-                
-                dispose.add(self.cancelSignal.filter { $0 === input }.observeValues({ (_) in
+    private func send(request: AVAssetResourceLoadingRequest) -> SignalProducer<(), NoError> {
+        return SignalProducer<(), NoError> { (observer, dispose) in
+            dispose.add(self.dataChanged.startWithValues {
+                if self.process(request: request) {
                     observer.sendCompleted()
-                }))
-            }
-        }
+                }
+            })
+        }.on(starting: {
+            self.loadingCount.modify { $0 =  $0 + 1 }
+        }, terminated: {
+            self.loadingCount.modify { $0 = $0 - 1 }
+        })
     }
     
     private func process(request: AVAssetResourceLoadingRequest) -> Bool {
@@ -220,6 +228,7 @@ final class CacheRecord {
                 infoRequest.contentLength = Int64(meta.length)
                 infoRequest.isByteRangeAccessSupported = true
                 request.finishLoading()
+                debugPrint("dirgotii finish request \(request.desc)")
                 return true
             }
         } else if let dataRequest = request.dataRequest {
@@ -230,6 +239,7 @@ final class CacheRecord {
                     dataRequest.respond(with: data)
                     if dataRequest.currentOffset >= dataRequest.requestedOffset + Int64(dataRequest.requestedLength) {
                         request.finishLoading()
+                        debugPrint("dirgotii finish request \(request.desc)")
                         return true
                     }
                 }
@@ -241,12 +251,18 @@ final class CacheRecord {
     private let (cancelSignal, cancelObserver) = Signal<AVAssetResourceLoadingRequest, NoError>.pipe()
     
     func load(request: AVAssetResourceLoadingRequest, for asset: AVURLAsset) {
+        debugPrint("dirgotii load request \(request.desc)")
+        
         if !process(request: request) {
-            requestLoader.apply(request).take(during: asset.reactive.lifetime).start()
+            send(request: request)
+                .take(during: asset.reactive.lifetime)
+                .take(until: self.cancelSignal.filter { $0 === request }.map { _ in () })
+                .start()
         }
     }
     
     func cancel(request: AVAssetResourceLoadingRequest) {
+        debugPrint("dirgotii cancel request \(request.desc)")
         cancelObserver.send(value: request)
     }
     

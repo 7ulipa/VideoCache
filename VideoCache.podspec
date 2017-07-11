@@ -39,4 +39,5 @@ TODO: Add long description of the pod here.
   # s.public_header_files = 'Pod/Classes/**/*.h'
   s.frameworks = 'Foundation', 'AVFoundation'
   s.dependency 'ReactiveSwift'
+  s.dependency 'ReactiveCocoa'
 end

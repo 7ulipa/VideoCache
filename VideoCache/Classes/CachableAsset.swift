@@ -21,11 +21,22 @@ public class CachableURLAsset: AVURLAsset {
     }
 }
 
+public class AutoURLAsset: CachableURLAsset {
+    override init(url URL: URL, options: [String : Any]? = nil) {
+        super.init(url: URL, options: options)
+        CacheManager.shared.startPlay(url: URL.fakeTransform)
+    }
+    
+    deinit {
+        CacheManager.shared.stopPlay(url: url.fakeTransform)
+    }
+}
+
 extension CachableURLAsset: AVAssetResourceLoaderDelegate {
     
     public func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
         debugPrint("load \(loadingRequest.desc)")
-        return ResourceLoader.shared.load(request: loadingRequest)
+        return ResourceLoader.shared.load(request: loadingRequest, for: self)
     }
     
     public func resourceLoader(_ resourceLoader: AVAssetResourceLoader, didCancel loadingRequest: AVAssetResourceLoadingRequest) {

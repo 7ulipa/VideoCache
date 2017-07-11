@@ -14,7 +14,7 @@ class ViewController: UIViewController {
     
     var player: AVPlayer!
 	
-    let asset = CachableURLAsset(url: URL(string: "http://mp4.28mtv.com:9090/mp43/4128-%E9%83%AD%E9%9D%99-%E5%BF%83%E5%A2%99[68mtv.com].mp4")!)
+    let asset = AutoURLAsset(url: URL(string: "http://mp4.28mtv.com:9090/mp43/4128-%E9%83%AD%E9%9D%99-%E5%BF%83%E5%A2%99[68mtv.com].mp4")!)
     
     override func viewDidLoad() {
         super.viewDidLoad()

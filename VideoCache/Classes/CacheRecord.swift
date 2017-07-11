@@ -11,6 +11,7 @@ import Foundation
 import ReactiveSwift
 import Result
 import MobileCoreServices
+import ReactiveCocoa
 
 protocol RecordMeta {
     var url: URL { get set }
@@ -72,8 +73,8 @@ final class CacheRecord {
     
     private var meta: RecordMeta
     
-    private let playing = MutableProperty(false)
-    private let prefetching = MutableProperty(false)
+    let playing = MutableProperty(false)
+    let prefetching = MutableProperty(false)
     
     init(url: URL) {
         let url = url.fakeTransform
@@ -118,8 +119,8 @@ final class CacheRecord {
                 }
         }
         
-        SignalProducer.combineLatest(playing.producer, requestLoader.isExecuting.producer, prefetching.producer, CacheRecord.hasSacredTask)
-            .map { $0.0 || $0.1 || ($0.2 && !$0.3) }
+        SignalProducer.combineLatest(playing.producer, requestLoader.isExecuting.producer, prefetching.producer, CacheRecord.hasSacredTask, completed.producer)
+            .map { !$0.4 && ($0.0 || $0.1 || ($0.2 && !$0.3)) }
             .skipRepeats()
             .startWithValues { [weak self] (value) in
                 if value {
@@ -227,8 +228,10 @@ final class CacheRecord {
     
     private let (cancelSignal, cancelObserver) = Signal<AVAssetResourceLoadingRequest, NoError>.pipe()
     
-    func load(request: AVAssetResourceLoadingRequest) {
-        requestLoader.apply(request).start()
+    func load(request: AVAssetResourceLoadingRequest, for asset: AVURLAsset) {
+        if !process(request: request) {
+            requestLoader.apply(request).take(during: asset.reactive.lifetime).start()
+        }
     }
     
     func cancel(request: AVAssetResourceLoadingRequest) {

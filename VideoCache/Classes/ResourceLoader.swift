@@ -11,9 +11,9 @@ import AVFoundation
 
 class ResourceLoader {
     static let shared = ResourceLoader()
-    func load(request: AVAssetResourceLoadingRequest) -> Bool {
+    func load(request: AVAssetResourceLoadingRequest, for asset: AVURLAsset) -> Bool {
         if let url = request.request.url {
-            CacheManager.shared.cache(for: url).load(request: request)
+            CacheManager.shared.cache(for: url).load(request: request, for: asset)
             return true
         }
         return false

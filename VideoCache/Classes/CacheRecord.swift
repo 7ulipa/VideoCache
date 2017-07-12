@@ -177,7 +177,7 @@ final class CacheRecord {
         
         debugPrint("dirgotii start download \(self.meta.url.lastPathComponent)")
         
-        downloadDisposable = VideoCacheSettings.downloader.download(self.meta.url.absoluteString, from: self.downloadedLength).observe(on: self.workQueue).start { (event) in
+        downloadDisposable = VideoCacheSettings.downloader.download(self.meta.url.absoluteString, range: self.downloadedLength ..< UInt64.max).observe(on: self.workQueue).start { (event) in
             switch event {
             case .value(let value):
                 switch value {
@@ -186,7 +186,7 @@ final class CacheRecord {
                     self.downloadedLength = writer.offsetInFile
                     self.dataChangedObserver.send(value: ())
                 case .response(let response):
-                    self.meta.length = max(UInt64(response.expectedContentLength), self.meta.length)
+                    self.meta.length = max(response.totalLength, self.meta.length)
                     self.meta.mimeType = response.mimeType ?? ""
                     NSKeyedArchiver.archiveRootObject(self.meta, toFile: self.metaPath)
                     self.dataChangedObserver.send(value: ())

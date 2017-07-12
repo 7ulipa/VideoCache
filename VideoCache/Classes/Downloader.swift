@@ -14,6 +14,6 @@ public enum Message {
 }
 
 public protocol Downloader {
-    func download(_ url: String, from: UInt64) -> SignalProducer<Message, NSError>
+    func download(_ url: String, range: Range<UInt64>) -> SignalProducer<Message, NSError>
 }
 

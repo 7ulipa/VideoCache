@@ -26,7 +26,7 @@ public final class SimpleDownloader: NSObject, Downloader {
     
     fileprivate var tasks: [Int: Observer<Message, NSError>] = [:]
     
-    public func download(_ url: String, from: UInt64) -> SignalProducer<Message, NSError> {
+    public func download(_ url: String, range: Range<UInt64>) -> SignalProducer<Message, NSError> {
         return SignalProducer<Message, NSError> { (observer, dispose) in
             self.workQueue.addOperation {
                 do {
@@ -34,7 +34,9 @@ public final class SimpleDownloader: NSObject, Downloader {
                         throw NSError(domain: "com.\(self)", code: 1024, userInfo: nil)
                     }
                     var request = URLRequest(url: url)
-                    request.setValue("bytes=\(from)-", forHTTPHeaderField: "Range")
+                    
+                    let upperBound = range.upperBound < UInt64.max ? "\(range.upperBound)" : ""
+                    request.setValue("bytes=\(range.lowerBound)-\(upperBound)", forHTTPHeaderField: "Range")
                     self.HTTPHeaders?.forEach {
                         request.setValue($0.value, forHTTPHeaderField: $0.key)
                     }

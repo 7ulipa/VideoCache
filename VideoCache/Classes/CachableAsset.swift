@@ -38,12 +38,10 @@ public class AutoURLAsset: CachableURLAsset {
 extension CachableURLAsset: AVAssetResourceLoaderDelegate {
     
     public func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
-        debugPrint("load \(loadingRequest.desc)")
         return ResourceLoader.shared.load(request: loadingRequest, for: self)
     }
     
     public func resourceLoader(_ resourceLoader: AVAssetResourceLoader, didCancel loadingRequest: AVAssetResourceLoadingRequest) {
-        debugPrint("cancel \(loadingRequest.desc)")
         ResourceLoader.shared.cancel(request: loadingRequest)
     }
 }
@@ -51,10 +49,11 @@ extension CachableURLAsset: AVAssetResourceLoaderDelegate {
 extension AVAssetResourceLoadingRequest {
     var desc: String {
         if contentInformationRequest != nil {
-            return "dirgotii: contentInformationRequest"
+            return (request.url?.lastPathComponent ?? "") + " contentInfo"
         } else if let dataRequest = dataRequest {
-            return "dirgotii: dataRequest \(dataRequest.requestedOffset) - \(dataRequest.requestedOffset + Int64(dataRequest.requestedLength))"
+            return (request.url?.lastPathComponent ?? "") + " \(dataRequest.requestedOffset)"
+        } else {
+            return ""
         }
-        return ""
     }
 }

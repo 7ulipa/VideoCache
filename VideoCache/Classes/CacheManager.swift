@@ -57,19 +57,27 @@ public class CacheManager {
     }
     
     public func startPlay(url: URL) {
-        cache(for: url.fakeTransform).playing.value = true
+        workQueue.async {
+            self.cache(for: url.fakeTransform).playing.value = true
+        }
     }
     
     public func stopPlay(url: URL) {
-        cache(for: url.fakeTransform).playing.value = false
+        workQueue.async {
+            self.cache(for: url.fakeTransform).playing.value = false
+        }
     }
     
     public func startPrefetch(url: URL) {
-        cache(for: url.fakeTransform).prefetching.value = true
+        workQueue.async {
+            self.cache(for: url.fakeTransform).prefetching.value = true
+        }
     }
     
     public func stopPrefetch(url: URL) {
-        cache(for: url.fakeTransform).prefetching.value = false
+        workQueue.async {
+            self.cache(for: url.fakeTransform).prefetching.value = false
+        }
     }
     
     let workQueue = DispatchQueue(label: "com.\(CacheManager.self).workQueue")

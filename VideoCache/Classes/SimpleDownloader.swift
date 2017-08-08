@@ -24,7 +24,7 @@ public final class SimpleDownloader: NSObject, Downloader {
         return result
     }
     
-    fileprivate var tasks: [Int: Observer<Message, NSError>] = [:]
+    fileprivate var tasks: [Int: Signal<Message, NSError>.Observer] = [:]
     
     public func download(_ url: String, range: Range<UInt64>) -> SignalProducer<Message, NSError> {
         return SignalProducer<Message, NSError> { (observer, dispose) in
@@ -46,7 +46,7 @@ public final class SimpleDownloader: NSObject, Downloader {
                     let task = self.session.dataTask(with: request)
                     self.tasks[task.taskIdentifier] = observer
                     
-                    dispose.add {
+                    dispose.observeEnded {
                         task.cancel()
                         self.workQueue.addOperation {
                             self.tasks.removeValue(forKey: task.taskIdentifier)

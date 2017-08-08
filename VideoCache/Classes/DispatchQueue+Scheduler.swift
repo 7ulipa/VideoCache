@@ -17,7 +17,7 @@ extension DispatchQueue: Scheduler {
                 action()
             }
         }
-        return ActionDisposable {
+        return AnyDisposable {
             canceled = true
         }
     }

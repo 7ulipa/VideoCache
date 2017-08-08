@@ -1,9 +1,9 @@
 PODS:
-  - ReactiveCocoa (5.0.4):
-    - ReactiveSwift (~> 1.1)
-  - ReactiveSwift (1.1.1):
+  - ReactiveCocoa (6.0.0):
+    - ReactiveSwift (~> 2.0)
+  - ReactiveSwift (2.0.0):
     - Result (~> 3.2)
-  - Result (3.2.1)
+  - Result (3.2.3)
   - VideoCache (0.1.0):
     - ReactiveCocoa
     - ReactiveSwift
@@ -16,10 +16,10 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  ReactiveCocoa: b31e754d15937811ede648fc83cd68f5de70a3d4
-  ReactiveSwift: 2489549e3231a6ff68ec99f3d320bb264f10ba0a
-  Result: 2453a22e5c5b11c0c3a478736e82cd02f763b781
-  VideoCache: b974ad97224682f768db01ffa55052195f9c2908
+  ReactiveCocoa: ca689e37b6a922f0273918220d735c43368de550
+  ReactiveSwift: 36339167e571774d936482d0f6512f5118a74731
+  Result: 128640a6347e8d2ae48b142556739a2d13f90ce6
+  VideoCache: 09035baf6e5d9e59dc8406e11c52d0e0f58fc3bd
 
 PODFILE CHECKSUM: 2e65c1783fe787e55187cbf2fed8647855da1646
 

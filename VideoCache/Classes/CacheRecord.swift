@@ -125,7 +125,6 @@ final class CacheRecord {
         
         SignalProducer.combineLatest(playing.producer, loading.producer, prefetching.producer, CacheRecord.hasSacredTask, completed.producer)
             .map { !$0.4 && ($0.0 || $0.1 || ($0.2 && !$0.3)) }
-            .skipRepeats()
             .startWithValues { [weak self] (value) in
                 if value {
                     self?.startCaching()
@@ -193,6 +192,7 @@ final class CacheRecord {
                 }
             case .failed, .interrupted:
                 self.downloading = false
+                self.networkErrorObserver.send(value: ())
                 debugPrint("dirgotii stop download \(self.meta.url.lastPathComponent)")
             case .completed:
                 self.downloading = false
@@ -214,11 +214,11 @@ final class CacheRecord {
                     observer.sendCompleted()
                 }
             })
-        }.on(starting: {
-            self.loadingCount.modify { $0 =  $0 + 1 }
-        }, terminated: {
-            self.loadingCount.modify { $0 = $0 - 1 }
-        })
+            }.on(starting: {
+                self.loadingCount.modify { $0 =  $0 + 1 }
+            }, disposed: {
+                self.loadingCount.modify { $0 = $0 - 1 }
+            })
     }
     
     private func process(request: AVAssetResourceLoadingRequest) -> Bool {
@@ -248,6 +248,7 @@ final class CacheRecord {
         return false
     }
     
+    private let (networkErrorSignal, networkErrorObserver) = Signal<(), NoError>.pipe()
     private let (cancelSignal, cancelObserver) = Signal<AVAssetResourceLoadingRequest, NoError>.pipe()
     
     func load(request: AVAssetResourceLoadingRequest, for asset: AVURLAsset) {
@@ -257,6 +258,7 @@ final class CacheRecord {
             send(request: request)
                 .take(during: asset.reactive.lifetime)
                 .take(until: self.cancelSignal.filter { $0 === request }.map { _ in () })
+                .take(until: networkErrorSignal)
                 .start()
         }
     }

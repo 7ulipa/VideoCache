@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'VideoCache'
-  s.version          = '0.2.1'
+  s.version          = '0.2.2'
   s.summary          = 'VideoCache like SDWebImage'
 
   s.description      = <<-DESC

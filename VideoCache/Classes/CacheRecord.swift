@@ -36,7 +36,7 @@ class AnyRecordMeta: NSObject, RecordMeta, NSCoding {
     func encode(with aCoder: NSCoder) {
         aCoder.encode(url, forKey: "url")
         aCoder.encode(length, forKey: "length")
-        aCoder.encode(createDate, forKey: "date")
+        aCoder.encode(createDate, forKey: "createDate")
         aCoder.encode(mimeType, forKey: "mimeType")
     }
     

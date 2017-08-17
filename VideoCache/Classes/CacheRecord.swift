@@ -29,14 +29,14 @@ class AnyRecordMeta: NSObject, RecordMeta, NSCoding {
     required init?(coder aDecoder: NSCoder) {
         url = aDecoder.decodeObject(forKey: "url") as? URL ?? URL(fileURLWithPath: "")
         length = aDecoder.decodeObject(forKey: "length") as? UInt64 ?? 0
-        createDate = aDecoder.decodeObject(forKey: "createDate") as? Date ?? Date()
+        createDate = aDecoder.decodeObject(forKey: "date") as? Date ?? Date()
         mimeType = aDecoder.decodeObject(forKey: "mimeType") as? String ?? ""
     }
     
     func encode(with aCoder: NSCoder) {
         aCoder.encode(url, forKey: "url")
         aCoder.encode(length, forKey: "length")
-        aCoder.encode(createDate, forKey: "createDate")
+        aCoder.encode(createDate, forKey: "date")
         aCoder.encode(mimeType, forKey: "mimeType")
     }
     
